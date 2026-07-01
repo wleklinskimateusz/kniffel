@@ -1,5 +1,7 @@
 import type { CategoryId } from "../domain/categories.ts";
-import { alwaysQualifies } from "../domain/categories.ts";
+import { alwaysQualifies, rowUsesFallbackMetrics } from "../domain/categories.ts";
+import type { CategoryAdvice } from "../engine/optimalHold.ts";
+import { rankingScore } from "../engine/optimalHold.ts";
 
 export type Locale = "en" | "de";
 
@@ -13,6 +15,8 @@ export type TranslationKeys = {
   category: string;
   pQualify: string;
   expectedPoints: string;
+  effectivePoints: string;
+  guaranteedFallback: string;
   bestHold: string;
   holdDice: string;
   aimFor: string;
@@ -22,6 +26,7 @@ export type TranslationKeys = {
   all: string;
   none: string;
   alwaysQualifies: string;
+  notApplicable: string;
   calculate: string;
   calculating: string;
   noResultsYet: string;
@@ -39,6 +44,8 @@ export const en: TranslationKeys = {
   category: "Category",
   pQualify: "P(qualify)",
   expectedPoints: "E[points]",
+  effectivePoints: "E[w/ fallback]",
+  guaranteedFallback: "Safe fallback",
   bestHold: "Best hold",
   holdDice: "Hold dice",
   aimFor: "Aim for",
@@ -48,6 +55,7 @@ export const en: TranslationKeys = {
   all: "All",
   none: "None",
   alwaysQualifies: "Always",
+  notApplicable: "—",
   calculate: "Calculate probabilities",
   calculating: "Calculating…",
   noResultsYet: "Set your dice and roll, then calculate to see probabilities.",
@@ -79,6 +87,8 @@ export const de: TranslationKeys = {
   category: "Kategorie",
   pQualify: "P(Treffer)",
   expectedPoints: "E[Punkte]",
+  effectivePoints: "E[m. Fallback]",
+  guaranteedFallback: "Sicherer Fallback",
   bestHold: "Behalten",
   holdDice: "Behalte Würfel",
   aimFor: "Ziel",
@@ -88,6 +98,7 @@ export const de: TranslationKeys = {
   all: "Alle",
   none: "Keine",
   alwaysQualifies: "Immer",
+  notApplicable: "—",
   calculate: "Wahrscheinlichkeiten berechnen",
   calculating: "Berechne…",
   noResultsYet: "Würfel und Wurf einstellen, dann berechnen.",
@@ -126,6 +137,27 @@ export function formatHoldIndices(hold: boolean[]): string {
 
 export function formatPercent(value: number): string {
   return `${(value * 100).toFixed(1)}%`;
+}
+
+export function formatGuaranteedFallbacks(
+  row: CategoryAdvice,
+  t: TranslationKeys,
+): string {
+  if (!rowUsesFallbackMetrics(row.category, row.pQualify)) return t.notApplicable;
+  if (row.guaranteedFallbacks.length === 0) return t.notApplicable;
+  return row.guaranteedFallbacks.map((cat) => t.categories[cat]).join(", ");
+}
+
+export function formatEffectivePoints(
+  row: CategoryAdvice,
+  t: TranslationKeys,
+): string {
+  if (!rowUsesFallbackMetrics(row.category, row.pQualify)) return t.notApplicable;
+  return row.effectivePoints.toFixed(2);
+}
+
+export function formatRecommendationPoints(row: CategoryAdvice): string {
+  return rankingScore(row).toFixed(1);
 }
 
 export function formatQualifyDisplay(

@@ -1,5 +1,7 @@
 import { useI18n } from '../i18n/context.tsx';
 import {
+  formatEffectivePoints,
+  formatGuaranteedFallbacks,
   formatHoldIndices,
   formatQualifyDisplay,
 } from '../i18n/index.ts';
@@ -14,6 +16,10 @@ type ProbabilityTableProps = {
   onSortChange: (key: SortKey) => void;
   onSelectCategory: (category: CategoryId) => void;
 };
+
+function sortClass(sortKey: SortKey, column: SortKey): string {
+  return sortKey === column ? 'sort-active' : 'sortable';
+}
 
 export function ProbabilityTable({
   advice,
@@ -32,18 +38,26 @@ export function ProbabilityTable({
             <th scope="col">{t.category}</th>
             <th
               scope="col"
-              className={sortKey === 'pQualify' ? 'sort-active' : 'sortable'}
+              className={sortClass(sortKey, 'pQualify')}
               onClick={() => onSortChange('pQualify')}
             >
               {t.pQualify}
             </th>
             <th
               scope="col"
-              className={sortKey === 'expectedPoints' ? 'sort-active' : 'sortable'}
+              className={sortClass(sortKey, 'expectedPoints')}
               onClick={() => onSortChange('expectedPoints')}
             >
               {t.expectedPoints}
             </th>
+            <th
+              scope="col"
+              className={sortClass(sortKey, 'effectivePoints')}
+              onClick={() => onSortChange('effectivePoints')}
+            >
+              {t.effectivePoints}
+            </th>
+            <th scope="col">{t.guaranteedFallback}</th>
             <th scope="col">{t.bestHold}</th>
           </tr>
         </thead>
@@ -57,6 +71,8 @@ export function ProbabilityTable({
               <td>{t.categories[row.category]}</td>
               <td>{formatQualifyDisplay(row.category, row.pQualify, t)}</td>
               <td className="points">{row.expectedPoints.toFixed(2)}</td>
+              <td className="points effective">{formatEffectivePoints(row, t)}</td>
+              <td className="fallback-col">{formatGuaranteedFallbacks(row, t)}</td>
               <td className="hold-col">{formatHoldIndices(row.optimalHold)}</td>
             </tr>
           ))}

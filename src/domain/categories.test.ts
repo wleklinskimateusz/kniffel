@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { ALL_CATEGORIES, qualifies, score } from "./categories.ts";
+import { ALL_CATEGORIES, bestScorableScore, bestScoreWithFallbacks, qualifies, score } from "./categories.ts";
 
 describe("qualifies", () => {
   it("detects kniffel", () => {
@@ -36,6 +36,16 @@ describe("score", () => {
 
   it("scores zero for failed bonus categories", () => {
     expect(score([1, 2, 3, 4, 5], "fullHouse")).toBe(0);
+  });
+
+  it("picks best scorable category for final dice", () => {
+    expect(bestScorableScore([1, 2, 3, 4, 5])).toBe(40);
+    expect(bestScorableScore([3, 3, 3, 2, 2])).toBe(25);
+  });
+
+  it("limits score to target and listed fallbacks only", () => {
+    expect(bestScoreWithFallbacks([3, 3, 3, 3, 5], "kniffel", ["threes"])).toBe(12);
+    expect(bestScoreWithFallbacks([3, 3, 4, 5, 6], "kniffel", ["threes"])).toBe(6);
   });
 
   it("covers all categories", () => {

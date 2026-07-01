@@ -375,6 +375,16 @@ button {
   color: var(--cream);
 }
 
+.prob-table td.points.effective {
+  color: var(--gold);
+}
+
+.prob-table td.fallback-col {
+  color: var(--text-muted);
+  font-size: 0.85rem;
+  max-width: 8rem;
+}
+
 .prob-table td.hold-col {
   font-variant-numeric: tabular-nums;
   color: var(--text-muted);

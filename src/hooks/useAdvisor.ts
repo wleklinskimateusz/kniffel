@@ -3,11 +3,12 @@ import type { CategoryId } from '../domain/categories.ts';
 import {
   getAdviceForAllCategories,
   getBestOverallAdvice,
+  rankingScore,
   rerollsFromRollNumber,
   type CategoryAdvice,
 } from '../engine/optimalHold.ts';
 
-export type SortKey = 'expectedPoints' | 'pQualify';
+export type SortKey = 'effectivePoints' | 'expectedPoints' | 'pQualify';
 
 type InputSnapshot = {
   dice: number[];
@@ -34,6 +35,9 @@ function snapshotsEqual(a: InputSnapshot, b: InputSnapshot): boolean {
 function sortAdvice(advice: CategoryAdvice[], sortKey: SortKey): CategoryAdvice[] {
   const copy = [...advice];
   copy.sort((a, b) => {
+    if (sortKey === 'effectivePoints') {
+      return rankingScore(b) - rankingScore(a);
+    }
     if (sortKey === 'expectedPoints') {
       return b.expectedPoints - a.expectedPoints;
     }
@@ -48,7 +52,7 @@ export function useAdvisor() {
   const [manualHoldMode, setManualHoldMode] = useState(false);
   const [holdMask, setHoldMask] = useState<boolean[]>(defaultHoldMask);
   const [selectedCategory, setSelectedCategory] = useState<CategoryId | null>(null);
-  const [sortKey, setSortKey] = useState<SortKey>('expectedPoints');
+  const [sortKey, setSortKey] = useState<SortKey>('effectivePoints');
   const [results, setResults] = useState<{
     snapshot: InputSnapshot;
     advice: CategoryAdvice[];

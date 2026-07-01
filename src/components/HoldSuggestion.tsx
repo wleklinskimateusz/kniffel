@@ -1,5 +1,11 @@
 import { useI18n } from '../i18n/context.tsx';
-import { formatHoldIndices, formatPercent } from '../i18n/index.ts';
+import {
+  formatGuaranteedFallbacks,
+  formatHoldIndices,
+  formatPercent,
+  formatRecommendationPoints,
+} from '../i18n/index.ts';
+import { rowUsesFallbackMetrics } from '../domain/categories.ts';
 import type { CategoryAdvice } from '../engine/optimalHold.ts';
 
 type HoldSuggestionProps = {
@@ -11,12 +17,21 @@ export function HoldSuggestion({ bestOverall }: HoldSuggestionProps) {
 
   if (!bestOverall) return null;
 
+  const showFallback =
+    rowUsesFallbackMetrics(bestOverall.category, bestOverall.pQualify) &&
+    bestOverall.guaranteedFallbacks.length > 0;
+
+  const fallbackText = showFallback
+    ? ` — ${t.guaranteedFallback}: ${formatGuaranteedFallbacks(bestOverall, t)}`
+    : '';
+
   return (
     <div className="hold-suggestion">
       <strong>{t.bestOverall}:</strong>{' '}
       {t.holdDice} {formatHoldIndices(bestOverall.optimalHold)} — {t.aimFor}{' '}
       <em>{t.categories[bestOverall.category]}</em> (
-      {formatPercent(bestOverall.pQualify)} / {bestOverall.expectedPoints.toFixed(1)} pts)
+      {formatPercent(bestOverall.pQualify)} / {formatRecommendationPoints(bestOverall)} pts
+      {fallbackText})
     </div>
   );
 }

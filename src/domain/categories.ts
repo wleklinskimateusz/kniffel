@@ -106,6 +106,71 @@ export function qualifies(dice: number[], category: CategoryId): boolean {
   }
 }
 
+/** Best score in the target category or one of the listed fallback categories. */
+export function bestScoreWithFallbacks(
+  dice: number[],
+  target: CategoryId,
+  fallbacks: CategoryId[],
+): number {
+  let best = score(dice, target);
+  for (const category of fallbacks) {
+    best = Math.max(best, score(dice, category));
+  }
+  return best;
+}
+
+/** Best score writable in any category for these final dice. */
+export function bestScorableScore(dice: number[]): number {
+  let best = 0;
+  for (const category of ALL_CATEGORIES) {
+    best = Math.max(best, score(dice, category));
+  }
+  return best;
+}
+
+export function isFigureCategory(category: CategoryId): boolean {
+  return !alwaysQualifies(category);
+}
+
+const GUARANTEED_THRESHOLD = 1 - 1e-9;
+
+/** Target figure is already locked in — no fallback column needed. */
+export function isTargetGuaranteed(
+  category: CategoryId,
+  pQualify: number,
+): boolean {
+  return isFigureCategory(category) && pQualify >= GUARANTEED_THRESHOLD;
+}
+
+/** Whether this category type can use E[w/ fallback] (figure categories only). */
+export function supportsFallbackMetrics(category: CategoryId): boolean {
+  return isFigureCategory(category);
+}
+
+export function rowUsesFallbackMetrics(
+  category: CategoryId,
+  pQualify: number,
+): boolean {
+  return supportsFallbackMetrics(category) && !isTargetGuaranteed(category, pQualify);
+}
+
+/** Upper-section boxes with at least one held die of that face (guaranteed minimum score). */
+export function heldUpperSectionFallbacks(
+  target: CategoryId,
+  dice: number[],
+  optimalHold: boolean[],
+): CategoryId[] {
+  return UPPER_SECTION.filter((category) => {
+    if (category === target) return false;
+    const face = faceValue(category);
+    if (face === null) return false;
+    const heldOfFace = dice.filter(
+      (value, index) => optimalHold[index] && value === face,
+    ).length;
+    return heldOfFace > 0;
+  });
+}
+
 export function score(dice: number[], category: CategoryId): number {
   const face = faceValue(category);
   if (face !== null) {
