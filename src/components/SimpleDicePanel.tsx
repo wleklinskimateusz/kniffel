@@ -1,8 +1,8 @@
-import { useEffect, useRef } from 'react';
 import { useI18n } from '../i18n/context.tsx';
 import { formatPercent } from '../i18n/index.ts';
 import type { Locale } from '../i18n/index.ts';
 import { DieRow } from './DieRow.tsx';
+import { useScrollToResultsAfterCalc } from '../hooks/useScrollToResultsAfterCalc.ts';
 import { useSimpleDice } from '../hooks/useSimpleDice.ts';
 
 const DICE_COUNTS = [1, 2, 3, 4, 5] as const;
@@ -29,23 +29,13 @@ export function SimpleDicePanel({ locale }: SimpleDicePanelProps) {
     result,
   } = useSimpleDice();
 
-  const resultsRef = useRef<HTMLElement>(null);
-  const scrollToResultsAfterCalc = useRef(false);
-
-  useEffect(() => {
-    if (isCalculating || !scrollToResultsAfterCalc.current) return;
-    if (!showResults) {
-      scrollToResultsAfterCalc.current = false;
-      return;
-    }
-    scrollToResultsAfterCalc.current = false;
-    requestAnimationFrame(() => {
-      resultsRef.current?.scrollIntoView({ behavior: 'smooth', block: 'start' });
-    });
-  }, [isCalculating, showResults]);
+  const { resultsRef, markScrollAfterCalc } = useScrollToResultsAfterCalc(
+    isCalculating,
+    showResults,
+  );
 
   const handleCalculate = () => {
-    scrollToResultsAfterCalc.current = true;
+    markScrollAfterCalc();
     calculate();
   };
 

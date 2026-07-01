@@ -3,6 +3,7 @@ import { HoldSuggestion } from './HoldSuggestion.tsx';
 import { ProbabilityTable } from './ProbabilityTable.tsx';
 import { RollSelector } from './RollSelector.tsx';
 import { useAdvisor } from '../hooks/useAdvisor.ts';
+import { useScrollToResultsAfterCalc } from '../hooks/useScrollToResultsAfterCalc.ts';
 import { useI18n } from '../i18n/context.tsx';
 import type { Locale } from '../i18n/index.ts';
 
@@ -31,6 +32,15 @@ export function KniffelPanel({ locale }: KniffelPanelProps) {
   } = useAdvisor();
 
   const showResults = hasResults && !isStale && !isCalculating;
+  const { resultsRef, markScrollAfterCalc } = useScrollToResultsAfterCalc(
+    isCalculating,
+    showResults,
+  );
+
+  const handleCalculate = () => {
+    markScrollAfterCalc();
+    calculate();
+  };
 
   return (
     <main className="main" lang={locale}>
@@ -47,7 +57,7 @@ export function KniffelPanel({ locale }: KniffelPanelProps) {
         <button
           type="button"
           className={isCalculating ? 'calculate-btn calculating' : 'calculate-btn'}
-          onClick={calculate}
+          onClick={handleCalculate}
           disabled={isCalculating}
           aria-busy={isCalculating}
         >
@@ -62,7 +72,11 @@ export function KniffelPanel({ locale }: KniffelPanelProps) {
         </button>
       </section>
 
-      <section className="results-panel" key={`results-${locale}`}>
+      <section
+        ref={resultsRef}
+        className="results-panel"
+        key={`results-${locale}`}
+      >
         {showResults ? (
           <>
             <HoldSuggestion bestOverall={bestOverall} />
