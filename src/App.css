@@ -414,4 +414,8 @@ button {
   .prob-table td {
     padding: 0.5rem;
   }
+
+  .prob-table .col-mobile-hidden {
+    display: none;
+  }
 }

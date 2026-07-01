@@ -57,8 +57,8 @@ export function ProbabilityTable({
             >
               {t.effectivePoints}
             </th>
-            <th scope="col">{t.guaranteedFallback}</th>
-            <th scope="col">{t.bestHold}</th>
+            <th scope="col" className="col-mobile-hidden">{t.guaranteedFallback}</th>
+            <th scope="col" className="col-mobile-hidden">{t.bestHold}</th>
           </tr>
         </thead>
         <tbody>
@@ -72,8 +72,8 @@ export function ProbabilityTable({
               <td>{formatQualifyDisplay(row.category, row.pQualify, t)}</td>
               <td className="points">{row.expectedPoints.toFixed(2)}</td>
               <td className="points effective">{formatEffectivePoints(row, t)}</td>
-              <td className="fallback-col">{formatGuaranteedFallbacks(row, t)}</td>
-              <td className="hold-col">{formatHoldIndices(row.optimalHold)}</td>
+              <td className="fallback-col col-mobile-hidden">{formatGuaranteedFallbacks(row, t)}</td>
+              <td className="hold-col col-mobile-hidden">{formatHoldIndices(row.optimalHold)}</td>
             </tr>
           ))}
         </tbody>
