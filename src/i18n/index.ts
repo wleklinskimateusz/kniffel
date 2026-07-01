@@ -10,8 +10,6 @@ export type TranslationKeys = {
   appSubtitle: string;
   rollLabel: string;
   rollOf: string;
-  autoHold: string;
-  manualHold: string;
   category: string;
   pQualify: string;
   expectedPoints: string;
@@ -22,7 +20,6 @@ export type TranslationKeys = {
   aimFor: string;
   bestOverall: string;
   clickDie: string;
-  rightClickHold: string;
   all: string;
   none: string;
   alwaysQualifies: string;
@@ -31,6 +28,15 @@ export type TranslationKeys = {
   calculating: string;
   noResultsYet: string;
   resultsOutdated: string;
+  tabKniffel: string;
+  tabSimpleDice: string;
+  simpleDiceSubtitle: string;
+  simpleDiceHint: string;
+  diceCount: string;
+  targetDice: string;
+  rerollsLeft: string;
+  pMatch: string;
+  simpleNoResultsYet: string;
   categories: Record<CategoryId, string>;
 };
 
@@ -39,8 +45,6 @@ export const en: TranslationKeys = {
   appSubtitle: "Estimate odds and optimal holds for your current dice",
   rollLabel: "Current roll",
   rollOf: "of 3",
-  autoHold: "Auto hold",
-  manualHold: "Manual hold",
   category: "Category",
   pQualify: "P(qualify)",
   expectedPoints: "E[points]",
@@ -51,7 +55,6 @@ export const en: TranslationKeys = {
   aimFor: "Aim for",
   bestOverall: "Best overall",
   clickDie: "Click a die to change its value",
-  rightClickHold: "Right-click or use the lock to toggle hold",
   all: "All",
   none: "None",
   alwaysQualifies: "Always",
@@ -60,6 +63,15 @@ export const en: TranslationKeys = {
   calculating: "Calculating…",
   noResultsYet: "Set your dice and roll, then calculate to see probabilities.",
   resultsOutdated: "Dice changed — calculate again to update results.",
+  tabKniffel: "Kniffel",
+  tabSimpleDice: "Dice odds",
+  simpleDiceSubtitle: "Probability of rolling an exact dice combination with rerolls",
+  simpleDiceHint: "Choose dice count, target combination, and rerolls after the first throw.",
+  diceCount: "Number of dice",
+  targetDice: "Target",
+  rerollsLeft: "Rerolls after first throw",
+  pMatch: "P(match)",
+  simpleNoResultsYet: "Set dice and target, then calculate.",
   categories: {
     ones: "Ones",
     twos: "Twos",
@@ -82,8 +94,6 @@ export const de: TranslationKeys = {
   appSubtitle: "Schätze Chancen und optimale Behaltungen für deine Würfel",
   rollLabel: "Aktueller Wurf",
   rollOf: "von 3",
-  autoHold: "Auto-Behalten",
-  manualHold: "Manuell behalten",
   category: "Kategorie",
   pQualify: "P(Treffer)",
   expectedPoints: "E[Punkte]",
@@ -94,7 +104,6 @@ export const de: TranslationKeys = {
   aimFor: "Ziel",
   bestOverall: "Beste Option",
   clickDie: "Klicke auf einen Würfel, um den Wert zu ändern",
-  rightClickHold: "Rechtsklick oder Schloss zum Behalten umschalten",
   all: "Alle",
   none: "Keine",
   alwaysQualifies: "Immer",
@@ -104,6 +113,15 @@ export const de: TranslationKeys = {
   noResultsYet: "Würfel und Wurf einstellen, dann berechnen.",
   resultsOutdated:
     "Würfel geändert — erneut berechnen für aktuelle Ergebnisse.",
+  tabKniffel: "Kniffel",
+  tabSimpleDice: "Würfel-Chancen",
+  simpleDiceSubtitle: "Wahrscheinlichkeit für eine bestimmte Würfelkombination mit Rerolls",
+  simpleDiceHint: "Würfelanzahl, Zielkombination und Rerolls nach dem ersten Wurf wählen.",
+  diceCount: "Anzahl Würfel",
+  targetDice: "Ziel",
+  rerollsLeft: "Rerolls nach erstem Wurf",
+  pMatch: "P(Treffer)",
+  simpleNoResultsYet: "Würfel und Ziel einstellen, dann berechnen.",
   categories: {
     ones: "Einser",
     twos: "Zweier",

@@ -1,0 +1,96 @@
+import { useI18n } from '../i18n/context.tsx';
+import { formatPercent } from '../i18n/index.ts';
+import { DieRow } from './DieRow.tsx';
+import { useSimpleDice } from '../hooks/useSimpleDice.ts';
+
+const DICE_COUNTS = [1, 2, 3, 4, 5] as const;
+const REROLL_OPTIONS = [1, 2] as const;
+
+export function SimpleDicePanel() {
+  const { t } = useI18n();
+  const {
+    diceCount,
+    setDiceCount,
+    target,
+    rerollsLeft,
+    setRerollsLeft,
+    cycleTarget,
+    calculate,
+    isCalculating,
+    isStale,
+    hasResults,
+    showResults,
+    result,
+  } = useSimpleDice();
+
+  return (
+    <main className="main">
+      <section className="controls-panel">
+        <p className="hint">{t.simpleDiceHint}</p>
+
+        <div className="dice-count-selector">
+          <span className="roll-label">{t.diceCount}</span>
+          <div className="segmented" role="group" aria-label={t.diceCount}>
+            {DICE_COUNTS.map((count) => (
+              <button
+                key={count}
+                type="button"
+                className={count === diceCount ? 'segment active' : 'segment'}
+                onClick={() => setDiceCount(count)}
+                aria-pressed={count === diceCount}
+              >
+                {count}
+              </button>
+            ))}
+          </div>
+        </div>
+
+        <DieRow dice={target} onCycleDie={cycleTarget} label={t.targetDice} />
+
+        <div className="roll-selector">
+          <span className="roll-label">{t.rerollsLeft}</span>
+          <div className="segmented" role="group" aria-label={t.rerollsLeft}>
+            {REROLL_OPTIONS.map((rerolls) => (
+              <button
+                key={rerolls}
+                type="button"
+                className={rerolls === rerollsLeft ? 'segment active' : 'segment'}
+                onClick={() => setRerollsLeft(rerolls)}
+                aria-pressed={rerolls === rerollsLeft}
+              >
+                {rerolls}
+              </button>
+            ))}
+          </div>
+        </div>
+
+        <button
+          type="button"
+          className="calculate-btn"
+          onClick={calculate}
+          disabled={isCalculating}
+        >
+          {isCalculating ? t.calculating : t.calculate}
+        </button>
+      </section>
+
+      <section className="results-panel">
+        {showResults && result ? (
+          <div className="simple-result">
+            <p className="simple-result-main">
+              {t.pMatch}: <strong>{formatPercent(result.pMatch)}</strong>
+            </p>
+          </div>
+        ) : (
+          <p className="results-placeholder">
+            {isCalculating
+              ? t.calculating
+              : isStale && hasResults
+                ? t.resultsOutdated
+                : t.simpleNoResultsYet}
+          </p>
+        )}
+      </section>
+    </main>
+  );
+}

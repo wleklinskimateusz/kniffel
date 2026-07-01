@@ -13,8 +13,6 @@ export type SortKey = 'effectivePoints' | 'expectedPoints' | 'pQualify';
 type InputSnapshot = {
   dice: number[];
   rollNumber: 1 | 2 | 3;
-  manualHoldMode: boolean;
-  holdMask: boolean[];
 };
 
 const DEFAULT_DICE = [1, 2, 3, 4, 5];
@@ -25,10 +23,7 @@ function defaultHoldMask(): boolean[] {
 
 function snapshotsEqual(a: InputSnapshot, b: InputSnapshot): boolean {
   return (
-    a.rollNumber === b.rollNumber &&
-    a.manualHoldMode === b.manualHoldMode &&
-    a.dice.every((v, i) => v === b.dice[i]) &&
-    a.holdMask.every((v, i) => v === b.holdMask[i])
+    a.rollNumber === b.rollNumber && a.dice.every((v, i) => v === b.dice[i])
   );
 }
 
@@ -49,8 +44,6 @@ function sortAdvice(advice: CategoryAdvice[], sortKey: SortKey): CategoryAdvice[
 export function useAdvisor() {
   const [dice, setDice] = useState<number[]>([...DEFAULT_DICE]);
   const [rollNumber, setRollNumber] = useState<1 | 2 | 3>(1);
-  const [manualHoldMode, setManualHoldMode] = useState(false);
-  const [holdMask, setHoldMask] = useState<boolean[]>(defaultHoldMask);
   const [selectedCategory, setSelectedCategory] = useState<CategoryId | null>(null);
   const [sortKey, setSortKey] = useState<SortKey>('effectivePoints');
   const [results, setResults] = useState<{
@@ -60,14 +53,12 @@ export function useAdvisor() {
   const [isCalculating, setIsCalculating] = useState(false);
 
   const currentSnapshot = useMemo<InputSnapshot>(
-    () => ({ dice, rollNumber, manualHoldMode, holdMask }),
-    [dice, rollNumber, manualHoldMode, holdMask],
+    () => ({ dice, rollNumber }),
+    [dice, rollNumber],
   );
 
   const isStale =
     results === null || !snapshotsEqual(results.snapshot, currentSnapshot);
-
-  const rerollsLeft = rerollsFromRollNumber(rollNumber);
 
   const advice = useMemo(() => {
     if (isStale || !results) return [];
@@ -80,76 +71,27 @@ export function useAdvisor() {
   }, [results, isStale]);
 
   const highlightedHold = useMemo(() => {
-    if (manualHoldMode && rerollsLeft > 0) return holdMask;
     if (isStale || !results) return defaultHoldMask();
     if (selectedCategory) {
       const row = results.advice.find((a) => a.category === selectedCategory);
       return row?.optimalHold ?? defaultHoldMask();
     }
     return bestOverall?.optimalHold ?? defaultHoldMask();
-  }, [
-    manualHoldMode,
-    rerollsLeft,
-    holdMask,
-    selectedCategory,
-    results,
-    bestOverall,
-    isStale,
-  ]);
+  }, [selectedCategory, results, bestOverall, isStale]);
 
-  const markInputsChanged = useCallback(() => {
+  const cycleDie = useCallback((index: number) => {
     setSelectedCategory(null);
+    setDice((prev) => {
+      const next = [...prev];
+      next[index] = (next[index] % 6) + 1;
+      return next;
+    });
   }, []);
 
-  const cycleDie = useCallback(
-    (index: number) => {
-      markInputsChanged();
-      setDice((prev) => {
-        const next = [...prev];
-        next[index] = (next[index] % 6) + 1;
-        return next;
-      });
-    },
-    [markInputsChanged],
-  );
-
-  const toggleHold = useCallback(
-    (index: number) => {
-      markInputsChanged();
-      setHoldMask((prev) => {
-        const next = [...prev];
-        next[index] = !next[index];
-        return next;
-      });
-      setManualHoldMode(true);
-    },
-    [markInputsChanged],
-  );
-
-  const resetHolds = useCallback(() => {
-    markInputsChanged();
-    setHoldMask(defaultHoldMask());
-    setManualHoldMode(false);
-  }, [markInputsChanged]);
-
-  const handleRollChange = useCallback(
-    (roll: 1 | 2 | 3) => {
-      markInputsChanged();
-      setRollNumber(roll);
-    },
-    [markInputsChanged],
-  );
-
-  const handleManualHoldModeChange = useCallback(
-    (enabled: boolean) => {
-      markInputsChanged();
-      if (!enabled) {
-        setHoldMask(defaultHoldMask());
-      }
-      setManualHoldMode(enabled);
-    },
-    [markInputsChanged],
-  );
+  const handleRollChange = useCallback((roll: 1 | 2 | 3) => {
+    setSelectedCategory(null);
+    setRollNumber(roll);
+  }, []);
 
   const calculate = useCallback(() => {
     setIsCalculating(true);
@@ -158,42 +100,28 @@ export function useAdvisor() {
     const snapshot: InputSnapshot = {
       dice: [...dice],
       rollNumber,
-      manualHoldMode,
-      holdMask: [...holdMask],
     };
 
     setTimeout(() => {
       const rerolls = rerollsFromRollNumber(snapshot.rollNumber);
-      const fixedHold =
-        snapshot.manualHoldMode && rerolls > 0 ? snapshot.holdMask : undefined;
-      const computed = getAdviceForAllCategories(
-        snapshot.dice,
-        rerolls,
-        fixedHold,
-      );
+      const computed = getAdviceForAllCategories(snapshot.dice, rerolls);
       setResults({ snapshot, advice: computed });
       setIsCalculating(false);
     }, 0);
-  }, [dice, rollNumber, manualHoldMode, holdMask]);
+  }, [dice, rollNumber]);
 
   return {
     dice,
     rollNumber,
     setRollNumber: handleRollChange,
-    manualHoldMode,
-    setManualHoldMode: handleManualHoldModeChange,
-    holdMask,
     highlightedHold,
     selectedCategory,
     setSelectedCategory,
     sortKey,
     setSortKey,
-    rerollsLeft,
     advice,
     bestOverall,
     cycleDie,
-    toggleHold,
-    resetHolds,
     calculate,
     isCalculating,
     isStale,

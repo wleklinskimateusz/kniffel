@@ -102,12 +102,4 @@ describe("probability engine", () => {
     expect(a).toEqual(b);
     expect(a.expectedPoints).toBeGreaterThan(0);
   });
-
-  it("respects fixed hold mask", () => {
-    const dice = [5, 5, 5, 2, 3];
-    const holdAll = [true, true, true, true, true];
-    const advice = computeCategoryAdvice(dice, 1, "kniffel", holdAll);
-    expect(advice.pQualify).toBe(0);
-    expect(advice.expectedPoints).toBe(0);
-  });
 });
