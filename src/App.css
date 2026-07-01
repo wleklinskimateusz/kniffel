@@ -188,12 +188,14 @@ button {
   align-items: center;
   gap: 0.6rem;
   margin-top: 1.5rem;
+  width: 100%;
 }
 
 .roll-label {
   font-size: 0.9rem;
   color: var(--text-muted);
   font-weight: 500;
+  text-align: center;
 }
 
 .segmented {
@@ -202,6 +204,7 @@ button {
   border-radius: var(--radius);
   overflow: hidden;
   border: 1px solid rgba(255, 255, 255, 0.15);
+  max-width: 100%;
 }
 
 .segment {
@@ -211,6 +214,27 @@ button {
   color: var(--text-muted);
   font-size: 0.9rem;
   transition: background 0.15s, color 0.15s;
+  min-width: 0;
+}
+
+.segment:first-child {
+  border-top-left-radius: calc(var(--radius) - 1px);
+  border-bottom-left-radius: calc(var(--radius) - 1px);
+}
+
+.segment:last-child {
+  border-top-right-radius: calc(var(--radius) - 1px);
+  border-bottom-right-radius: calc(var(--radius) - 1px);
+}
+
+.segment:focus {
+  outline: none;
+}
+
+.segment:focus-visible {
+  outline: 2px solid var(--gold);
+  outline-offset: -2px;
+  z-index: 1;
 }
 
 .segment:not(:last-child) {
@@ -479,6 +503,16 @@ button {
   .segment {
     padding: 0.45rem 0.65rem;
     font-size: 0.8rem;
+  }
+
+  .roll-selector .segmented {
+    width: min(100%, 10rem);
+  }
+
+  .roll-selector .segment {
+    flex: 1 1 0;
+    text-align: center;
+    padding-inline: 0.5rem;
   }
 
   .prob-table {

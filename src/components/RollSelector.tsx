@@ -11,7 +11,9 @@ export function RollSelector({ rollNumber, onChange }: RollSelectorProps) {
 
   return (
     <div className="roll-selector">
-      <span className="roll-label">{t.rollLabel}</span>
+      <span className="roll-label">
+        {t.rollLabel} ({t.rollOf})
+      </span>
       <div className="segmented" role="group" aria-label={t.rollLabel}>
         {rolls.map((roll) => (
           <button
@@ -20,8 +22,9 @@ export function RollSelector({ rollNumber, onChange }: RollSelectorProps) {
             className={roll === rollNumber ? 'segment active' : 'segment'}
             onClick={() => onChange(roll)}
             aria-pressed={roll === rollNumber}
+            aria-label={`${roll} ${t.rollOf}`}
           >
-            {roll} {t.rollOf}
+            {roll}
           </button>
         ))}
       </div>
