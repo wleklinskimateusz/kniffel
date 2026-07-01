@@ -7,6 +7,7 @@ import {
   rerollsFromRollNumber,
   type CategoryAdvice,
 } from '../engine/optimalHold.ts';
+import { deferHeavyWork } from '../utils/deferHeavyWork.ts';
 
 export type SortKey = 'effectivePoints' | 'expectedPoints' | 'pQualify';
 
@@ -94,20 +95,23 @@ export function useAdvisor() {
   }, []);
 
   const calculate = useCallback(() => {
-    setIsCalculating(true);
-    setSelectedCategory(null);
-
     const snapshot: InputSnapshot = {
       dice: [...dice],
       rollNumber,
     };
 
-    setTimeout(() => {
-      const rerolls = rerollsFromRollNumber(snapshot.rollNumber);
-      const computed = getAdviceForAllCategories(snapshot.dice, rerolls);
-      setResults({ snapshot, advice: computed });
-      setIsCalculating(false);
-    }, 0);
+    deferHeavyWork(
+      () => {
+        setIsCalculating(true);
+        setSelectedCategory(null);
+      },
+      () => {
+        const rerolls = rerollsFromRollNumber(snapshot.rollNumber);
+        const computed = getAdviceForAllCategories(snapshot.dice, rerolls);
+        setResults({ snapshot, advice: computed });
+        setIsCalculating(false);
+      },
+    );
   }, [dice, rollNumber]);
 
   return {

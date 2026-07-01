@@ -3,6 +3,7 @@ import {
   computeTargetProbabilityFromScratch,
   type TargetProbabilityResult,
 } from '../engine/simpleDice.ts';
+import { deferHeavyWork } from '../utils/deferHeavyWork.ts';
 
 type SimpleSnapshot = {
   diceCount: number;
@@ -52,22 +53,24 @@ export function useSimpleDice() {
   }, []);
 
   const calculate = useCallback(() => {
-    setIsCalculating(true);
     const snapshot: SimpleSnapshot = {
       diceCount,
       target: [...target],
       rerollsLeft,
     };
 
-    setTimeout(() => {
-      const result = computeTargetProbabilityFromScratch(
-        snapshot.diceCount,
-        snapshot.target,
-        snapshot.rerollsLeft,
-      );
-      setResults({ snapshot, result });
-      setIsCalculating(false);
-    }, 0);
+    deferHeavyWork(
+      () => setIsCalculating(true),
+      () => {
+        const result = computeTargetProbabilityFromScratch(
+          snapshot.diceCount,
+          snapshot.target,
+          snapshot.rerollsLeft,
+        );
+        setResults({ snapshot, result });
+        setIsCalculating(false);
+      },
+    );
   }, [diceCount, target, rerollsLeft]);
 
   const showResults = results !== null && !isStale && !isCalculating;

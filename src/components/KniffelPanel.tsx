@@ -40,11 +40,19 @@ export function KniffelPanel() {
 
         <button
           type="button"
-          className="calculate-btn"
+          className={isCalculating ? 'calculate-btn calculating' : 'calculate-btn'}
           onClick={calculate}
           disabled={isCalculating}
+          aria-busy={isCalculating}
         >
-          {isCalculating ? t.calculating : t.calculate}
+          {isCalculating ? (
+            <>
+              <span className="btn-spinner" aria-hidden />
+              {t.calculating}
+            </>
+          ) : (
+            t.calculate
+          )}
         </button>
       </section>
 
@@ -61,12 +69,17 @@ export function KniffelPanel() {
             />
           </>
         ) : (
-          <p className="results-placeholder">
-            {isCalculating
-              ? t.calculating
-              : isStale && hasResults
-                ? t.resultsOutdated
-                : t.noResultsYet}
+          <p className={isCalculating ? 'results-placeholder calculating' : 'results-placeholder'}>
+            {isCalculating ? (
+              <>
+                <span className="btn-spinner" aria-hidden />
+                {t.calculating}
+              </>
+            ) : isStale && hasResults ? (
+              t.resultsOutdated
+            ) : (
+              t.noResultsYet
+            )}
           </p>
         )}
       </section>

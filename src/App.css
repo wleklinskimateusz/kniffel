@@ -309,7 +309,10 @@ button {
 }
 
 .calculate-btn {
-  display: block;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
   width: 100%;
   max-width: 20rem;
   margin: 1.5rem auto 0;
@@ -322,6 +325,34 @@ button {
   font-weight: 600;
   box-shadow: 0 3px 0 var(--gold-dim);
   transition: transform 0.1s, opacity 0.15s;
+}
+
+.btn-spinner {
+  width: 1rem;
+  height: 1rem;
+  border: 2px solid rgba(15, 51, 41, 0.25);
+  border-top-color: var(--felt-dark);
+  border-radius: 50%;
+  animation: spin 0.7s linear infinite;
+  flex-shrink: 0;
+}
+
+@keyframes spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+.calculate-btn.calculating {
+  opacity: 1;
+}
+
+.results-placeholder.calculating {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.6rem;
+  color: var(--text);
 }
 
 .calculate-btn:hover:not(:disabled) {

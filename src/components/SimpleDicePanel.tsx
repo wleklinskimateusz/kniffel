@@ -66,11 +66,19 @@ export function SimpleDicePanel() {
 
         <button
           type="button"
-          className="calculate-btn"
+          className={isCalculating ? 'calculate-btn calculating' : 'calculate-btn'}
           onClick={calculate}
           disabled={isCalculating}
+          aria-busy={isCalculating}
         >
-          {isCalculating ? t.calculating : t.calculate}
+          {isCalculating ? (
+            <>
+              <span className="btn-spinner" aria-hidden />
+              {t.calculating}
+            </>
+          ) : (
+            t.calculate
+          )}
         </button>
       </section>
 
@@ -82,12 +90,17 @@ export function SimpleDicePanel() {
             </p>
           </div>
         ) : (
-          <p className="results-placeholder">
-            {isCalculating
-              ? t.calculating
-              : isStale && hasResults
-                ? t.resultsOutdated
-                : t.simpleNoResultsYet}
+          <p className={isCalculating ? 'results-placeholder calculating' : 'results-placeholder'}>
+            {isCalculating ? (
+              <>
+                <span className="btn-spinner" aria-hidden />
+                {t.calculating}
+              </>
+            ) : isStale && hasResults ? (
+              t.resultsOutdated
+            ) : (
+              t.simpleNoResultsYet
+            )}
           </p>
         )}
       </section>
