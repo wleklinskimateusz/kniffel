@@ -9,6 +9,7 @@ import {
   getBestOverallAdvice,
   rankingScore,
   compareAdviceRanking,
+  sortCategoryAdvice,
 } from "./optimalHold.ts";
 import { toCounts } from "../domain/dice.ts";
 
@@ -98,6 +99,25 @@ describe("probability engine", () => {
     expect(fourKind.expectedPoints).toBe(0);
     expect(compareAdviceRanking(fullHouse, fourKind)).toBeGreaterThan(0);
     expect(getBestOverallAdvice(advice)?.category).toBe("fullHouse");
+  });
+
+  it("sorts zero E[points] rows to the end of the table", () => {
+    const dice = [3, 3, 3, 6, 6];
+    const advice = getAdviceForAllCategories(dice, 0);
+    const sorted = sortCategoryAdvice(advice, "effectivePoints");
+    const fourKindIdx = sorted.findIndex((a) => a.category === "fourKind");
+    const fullHouseIdx = sorted.findIndex((a) => a.category === "fullHouse");
+    const threeKindIdx = sorted.findIndex((a) => a.category === "threeKind");
+
+    expect(fullHouseIdx).toBeLessThan(fourKindIdx);
+    expect(threeKindIdx).toBeLessThan(fourKindIdx);
+    expect(sorted[0].expectedPoints).toBeGreaterThan(0);
+
+    const firstZeroIdx = sorted.findIndex((a) => a.expectedPoints === 0);
+    expect(firstZeroIdx).toBeGreaterThan(0);
+    for (let i = firstZeroIdx; i < sorted.length; i++) {
+      expect(sorted[i].expectedPoints).toBe(0);
+    }
   });
 
   it("does not use fallback metrics for upper section categories", () => {
