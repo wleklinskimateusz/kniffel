@@ -1,4 +1,10 @@
 import {
+  type FlexibleTarget,
+  flexibleTargetKey,
+  matchesFlexibleTarget,
+  normalizeTarget,
+} from '../domain/simpleTarget.ts';
+import {
   type DiceCounts,
   addCounts,
   countsKey,
@@ -18,27 +24,32 @@ export type TargetProbabilityResult = {
 
 const memo = new Map<string, number>();
 
-function memoKey(counts: DiceCounts, rerollsLeft: number, target: DiceCounts): string {
-  return `${countsKey(counts)}|${rerollsLeft}|${countsKey(target)}`;
+function memoKey(
+  counts: DiceCounts,
+  rerollsLeft: number,
+  target: FlexibleTarget,
+): string {
+  return `${countsKey(counts)}|${rerollsLeft}|${flexibleTargetKey(target)}`;
 }
 
-function countsMatchTarget(counts: DiceCounts, target: DiceCounts): boolean {
-  return counts.every((count, index) => count === target[index]);
+function countsMatchTarget(counts: DiceCounts, target: FlexibleTarget): boolean {
+  return matchesFlexibleTarget(expandCounts(counts), target);
 }
 
 function solveTargetMultiset(
   counts: DiceCounts,
   rerollsLeft: number,
-  target: DiceCounts,
+  target: FlexibleTarget,
 ): number {
-  const key = memoKey(counts, rerollsLeft, target);
+  const normalizedTarget = normalizeTarget(target);
+  const key = memoKey(counts, rerollsLeft, normalizedTarget);
   const cached = memo.get(key);
   if (cached !== undefined) return cached;
 
   let result: number;
 
   if (rerollsLeft === 0) {
-    result = countsMatchTarget(counts, target) ? 1 : 0;
+    result = countsMatchTarget(counts, normalizedTarget) ? 1 : 0;
   } else {
     const diceTotal = countsSum(counts);
     let best = -1;
@@ -52,7 +63,9 @@ function solveTargetMultiset(
       for (const outcome of outcomes) {
         const weight = outcomeWeight(outcome);
         const newCounts = addCounts(heldCounts, outcome);
-        sumP += solveTargetMultiset(newCounts, rerollsLeft - 1, target) * weight;
+        sumP +=
+          solveTargetMultiset(newCounts, rerollsLeft - 1, normalizedTarget) *
+          weight;
         totalWeight += weight;
       }
 
@@ -69,8 +82,9 @@ function solveTargetMultiset(
 function findBestHeldCounts(
   counts: DiceCounts,
   rerollsLeft: number,
-  target: DiceCounts,
+  target: FlexibleTarget,
 ): DiceCounts {
+  const normalizedTarget = normalizeTarget(target);
   const diceTotal = countsSum(counts);
   let bestHeld: DiceCounts = [0, 0, 0, 0, 0, 0];
   let best = -1;
@@ -84,7 +98,9 @@ function findBestHeldCounts(
     for (const outcome of outcomes) {
       const weight = outcomeWeight(outcome);
       const newCounts = addCounts(heldCounts, outcome);
-      sumP += solveTargetMultiset(newCounts, rerollsLeft - 1, target) * weight;
+      sumP +=
+        solveTargetMultiset(newCounts, rerollsLeft - 1, normalizedTarget) *
+        weight;
       totalWeight += weight;
     }
 
@@ -104,27 +120,25 @@ export function clearSimpleDiceCache(): void {
 
 export function computeTargetProbability(
   dice: number[],
-  target: number[],
+  target: FlexibleTarget,
   rerollsLeft: number,
 ): TargetProbabilityResult {
-  if (dice.length !== target.length) {
+  const normalizedTarget = normalizeTarget(target);
+  if (dice.length !== normalizedTarget.length) {
     throw new Error('Dice and target must have the same length');
   }
 
   const counts = toCounts(dice);
-  const targetCounts = toCounts(target);
 
   if (rerollsLeft === 0) {
-    const sortedDice = [...dice].sort((a, b) => a - b).join(',');
-    const sortedTarget = [...target].sort((a, b) => a - b).join(',');
     return {
-      pMatch: sortedDice === sortedTarget ? 1 : 0,
+      pMatch: matchesFlexibleTarget(dice, normalizedTarget) ? 1 : 0,
       optimalHold: dice.map(() => true),
     };
   }
 
-  const bestHeld = findBestHeldCounts(counts, rerollsLeft, targetCounts);
-  const pMatch = solveTargetMultiset(counts, rerollsLeft, targetCounts);
+  const bestHeld = findBestHeldCounts(counts, rerollsLeft, normalizedTarget);
+  const pMatch = solveTargetMultiset(counts, rerollsLeft, normalizedTarget);
   const optimalHold = heldCountsToMask(dice, bestHeld);
 
   return { pMatch, optimalHold };
@@ -133,10 +147,11 @@ export function computeTargetProbability(
 /** P(hit target) from a fresh roll of `diceCount` dice with `rerollsLeft` rerolls after. */
 export function computeTargetProbabilityFromScratch(
   diceCount: number,
-  target: number[],
+  target: FlexibleTarget,
   rerollsLeft: number,
 ): TargetProbabilityResult {
-  if (target.length !== diceCount) {
+  const normalizedTarget = normalizeTarget(target);
+  if (normalizedTarget.length !== diceCount) {
     throw new Error('Target length must match dice count');
   }
   if (rerollsLeft < 1) {
@@ -152,7 +167,11 @@ export function computeTargetProbabilityFromScratch(
   for (const outcome of initialOutcomes) {
     const weight = outcomeWeight(outcome);
     const dice = expandCounts(outcome);
-    const { pMatch } = computeTargetProbability(dice, target, rerollsLeft);
+    const { pMatch } = computeTargetProbability(
+      dice,
+      normalizedTarget,
+      rerollsLeft,
+    );
     sumP += pMatch * weight;
     totalWeight += weight;
   }
@@ -160,7 +179,6 @@ export function computeTargetProbabilityFromScratch(
   return { pMatch: sumP / totalWeight, optimalHold: [] };
 }
 
-// For tests: verify multiset matching
-export function diceMatchTarget(dice: number[], target: number[]): boolean {
-  return countsMatchTarget(toCounts(dice), toCounts(target));
+export function diceMatchTarget(dice: number[], target: FlexibleTarget): boolean {
+  return matchesFlexibleTarget(dice, target);
 }

@@ -1,5 +1,10 @@
 import { useCallback, useMemo, useState } from 'react';
 import {
+  type FlexibleTarget,
+  normalizeSlot,
+  targetsEqual,
+} from '../domain/simpleTarget.ts';
+import {
   computeTargetProbabilityFromScratch,
   type TargetProbabilityResult,
 } from '../engine/simpleDice.ts';
@@ -7,21 +12,17 @@ import { deferHeavyWork } from '../utils/deferHeavyWork.ts';
 
 type SimpleSnapshot = {
   diceCount: number;
-  target: number[];
+  target: FlexibleTarget;
   rerollsLeft: number;
 };
 
-function snapshotsEqual(a: SimpleSnapshot, b: SimpleSnapshot): boolean {
-  return (
-    a.diceCount === b.diceCount &&
-    a.rerollsLeft === b.rerollsLeft &&
-    a.target.every((v, i) => v === b.target[i])
-  );
+function defaultTargetSlot(index: number): number[] {
+  return [Math.min(index + 1, 6)];
 }
 
 export function useSimpleDice() {
   const [diceCount, setDiceCount] = useState(2);
-  const [target, setTarget] = useState<number[]>([5, 6]);
+  const [targetSlots, setTargetSlots] = useState<FlexibleTarget>([[5], [6]]);
   const [rerollsLeft, setRerollsLeft] = useState(1);
   const [results, setResults] = useState<{
     snapshot: SimpleSnapshot;
@@ -30,24 +31,49 @@ export function useSimpleDice() {
   const [isCalculating, setIsCalculating] = useState(false);
 
   const currentSnapshot = useMemo<SimpleSnapshot>(
-    () => ({ diceCount, target, rerollsLeft }),
-    [diceCount, target, rerollsLeft],
+    () => ({
+      diceCount,
+      target: targetSlots.map((slot) => [...slot]),
+      rerollsLeft,
+    }),
+    [diceCount, targetSlots, rerollsLeft],
   );
 
   const isStale =
-    results === null || !snapshotsEqual(results.snapshot, currentSnapshot);
+    results === null ||
+    results.snapshot.diceCount !== currentSnapshot.diceCount ||
+    results.snapshot.rerollsLeft !== currentSnapshot.rerollsLeft ||
+    !targetsEqual(results.snapshot.target, currentSnapshot.target);
 
   const resizeTarget = useCallback((count: number) => {
     setDiceCount(count);
-    setTarget((prev) =>
-      Array.from({ length: count }, (_, i) => prev[i] ?? Math.min(i + 1, 6)),
+    setTargetSlots((prev) =>
+      Array.from({ length: count }, (_, index) =>
+        prev[index] ? [...prev[index]] : defaultTargetSlot(index),
+      ),
     );
   }, []);
 
-  const cycleTarget = useCallback((index: number) => {
-    setTarget((prev) => {
-      const next = [...prev];
-      next[index] = (next[index] % 6) + 1;
+  const cycleSlot = useCallback((index: number) => {
+    setTargetSlots((prev) => {
+      const next = prev.map((slot) => [...slot]);
+      const slot = normalizeSlot(next[index]);
+      const current = slot.length === 1 ? slot[0] : slot[0];
+      next[index] = [(current % 6) + 1];
+      return next;
+    });
+  }, []);
+
+  const toggleFaceInSlot = useCallback((slotIndex: number, face: number) => {
+    setTargetSlots((prev) => {
+      const next = prev.map((slot) => [...slot]);
+      const slot = normalizeSlot(next[slotIndex]);
+      const hasFace = slot.includes(face);
+      if (hasFace && slot.length === 1) return prev;
+
+      next[slotIndex] = hasFace
+        ? slot.filter((value) => value !== face)
+        : [...slot, face].sort((a, b) => a - b);
       return next;
     });
   }, []);
@@ -55,7 +81,7 @@ export function useSimpleDice() {
   const calculate = useCallback(() => {
     const snapshot: SimpleSnapshot = {
       diceCount,
-      target: [...target],
+      target: targetSlots.map((slot) => [...slot]),
       rerollsLeft,
     };
 
@@ -71,7 +97,7 @@ export function useSimpleDice() {
         setIsCalculating(false);
       },
     );
-  }, [diceCount, target, rerollsLeft]);
+  }, [diceCount, targetSlots, rerollsLeft]);
 
   const showResults = results !== null && !isStale && !isCalculating;
   const result = showResults ? results.result : null;
@@ -79,10 +105,11 @@ export function useSimpleDice() {
   return {
     diceCount,
     setDiceCount: resizeTarget,
-    target,
+    targetSlots,
     rerollsLeft,
     setRerollsLeft,
-    cycleTarget,
+    cycleSlot,
+    toggleFaceInSlot,
     calculate,
     isCalculating,
     isStale,

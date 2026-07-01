@@ -1,7 +1,8 @@
+import { useState } from 'react';
 import { useI18n } from '../i18n/context.tsx';
 import { formatPercent } from '../i18n/index.ts';
 import type { Locale } from '../i18n/index.ts';
-import { DieRow } from './DieRow.tsx';
+import { TargetDieRow } from './TargetDieRow.tsx';
 import { useScrollToResultsAfterCalc } from '../hooks/useScrollToResultsAfterCalc.ts';
 import { useSimpleDice } from '../hooks/useSimpleDice.ts';
 
@@ -14,13 +15,15 @@ type SimpleDicePanelProps = {
 
 export function SimpleDicePanel({ locale }: SimpleDicePanelProps) {
   const { t } = useI18n();
+  const [expandedSlot, setExpandedSlot] = useState<number | null>(null);
   const {
     diceCount,
     setDiceCount,
-    target,
+    targetSlots,
     rerollsLeft,
     setRerollsLeft,
-    cycleTarget,
+    cycleSlot,
+    toggleFaceInSlot,
     calculate,
     isCalculating,
     isStale,
@@ -63,7 +66,20 @@ export function SimpleDicePanel({ locale }: SimpleDicePanelProps) {
           </div>
         </div>
 
-        <DieRow dice={target} onCycleDie={cycleTarget} label={t.targetDice} />
+        <TargetDieRow
+          slots={targetSlots}
+          expandedSlot={expandedSlot}
+          onExpandSlot={setExpandedSlot}
+          onCycleSlot={(index) => {
+            setExpandedSlot(null);
+            cycleSlot(index);
+          }}
+          onToggleFace={toggleFaceInSlot}
+          label={t.targetDice}
+          hint={t.targetAlternativesHint}
+          alternativesLabel={t.targetAlternativesLabel}
+          editAlternativesLabel={t.targetEditAlternatives}
+        />
 
         <div className="roll-selector">
           <span className="roll-label">{t.rerollsLeft}</span>

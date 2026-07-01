@@ -34,6 +34,9 @@ export type TranslationKeys = {
   simpleDiceHint: string;
   diceCount: string;
   targetDice: string;
+  targetAlternativesHint: string;
+  targetAlternativesLabel: string;
+  targetEditAlternatives: string;
   rerollsLeft: string;
   pMatch: string;
   simpleNoResultsYet: string;
@@ -69,6 +72,9 @@ export const en: TranslationKeys = {
   simpleDiceHint: "Choose dice count, target combination, and rerolls after the first throw.",
   diceCount: "Number of dice",
   targetDice: "Target",
+  targetAlternativesHint: "Tap a die to change its value. Use ± to allow multiple faces (e.g. 1 or 6).",
+  targetAlternativesLabel: "Acceptable faces for selected die",
+  targetEditAlternatives: "Edit alternatives for die",
   rerollsLeft: "Rerolls after first throw",
   pMatch: "P(match)",
   simpleNoResultsYet: "Set dice and target, then calculate.",
@@ -119,6 +125,9 @@ export const de: TranslationKeys = {
   simpleDiceHint: "Würfelanzahl, Zielkombination und Rerolls nach dem ersten Wurf wählen.",
   diceCount: "Anzahl Würfel",
   targetDice: "Ziel",
+  targetAlternativesHint: "Tippe auf einen Würfel, um den Wert zu ändern. Mit ± mehrere Ziele wählen (z. B. 1 oder 6).",
+  targetAlternativesLabel: "Erlaubte Augenzahlen für den gewählten Würfel",
+  targetEditAlternatives: "Alternativen für Würfel bearbeiten",
   rerollsLeft: "Rerolls nach erstem Wurf",
   pMatch: "P(Treffer)",
   simpleNoResultsYet: "Würfel und Ziel einstellen, dann berechnen.",
