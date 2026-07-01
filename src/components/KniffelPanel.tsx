@@ -4,8 +4,13 @@ import { ProbabilityTable } from './ProbabilityTable.tsx';
 import { RollSelector } from './RollSelector.tsx';
 import { useAdvisor } from '../hooks/useAdvisor.ts';
 import { useI18n } from '../i18n/context.tsx';
+import type { Locale } from '../i18n/index.ts';
 
-export function KniffelPanel() {
+type KniffelPanelProps = {
+  locale: Locale;
+};
+
+export function KniffelPanel({ locale }: KniffelPanelProps) {
   const { t } = useI18n();
   const {
     dice,
@@ -28,12 +33,13 @@ export function KniffelPanel() {
   const showResults = hasResults && !isStale && !isCalculating;
 
   return (
-    <main className="main">
-      <section className="controls-panel">
+    <main className="main" lang={locale}>
+      <section className="controls-panel" key={`controls-${locale}`}>
         <DiceInput
           dice={dice}
           highlightedHold={highlightedHold}
           onCycleDie={cycleDie}
+          locale={locale}
         />
 
         <RollSelector rollNumber={rollNumber} onChange={setRollNumber} />
@@ -56,7 +62,7 @@ export function KniffelPanel() {
         </button>
       </section>
 
-      <section className="results-panel">
+      <section className="results-panel" key={`results-${locale}`}>
         {showResults ? (
           <>
             <HoldSuggestion bestOverall={bestOverall} />

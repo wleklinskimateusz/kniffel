@@ -7,7 +7,7 @@ import { useI18n } from './i18n/context.tsx';
 import './App.css';
 
 function AppContent() {
-  const { t } = useI18n();
+  const { t, locale } = useI18n();
   const [tab, setTab] = useState<AppTab>('kniffel');
 
   return (
@@ -24,7 +24,11 @@ function AppContent() {
 
       <AppTabs active={tab} onChange={setTab} />
 
-      {tab === 'kniffel' ? <KniffelPanel /> : <SimpleDicePanel />}
+      {tab === 'kniffel' ? (
+        <KniffelPanel locale={locale} />
+      ) : (
+        <SimpleDicePanel locale={locale} />
+      )}
     </div>
   );
 }

@@ -1,12 +1,17 @@
 import { useI18n } from '../i18n/context.tsx';
 import { formatPercent } from '../i18n/index.ts';
+import type { Locale } from '../i18n/index.ts';
 import { DieRow } from './DieRow.tsx';
 import { useSimpleDice } from '../hooks/useSimpleDice.ts';
 
 const DICE_COUNTS = [1, 2, 3, 4, 5] as const;
 const REROLL_OPTIONS = [1, 2] as const;
 
-export function SimpleDicePanel() {
+type SimpleDicePanelProps = {
+  locale: Locale;
+};
+
+export function SimpleDicePanel({ locale }: SimpleDicePanelProps) {
   const { t } = useI18n();
   const {
     diceCount,
@@ -24,9 +29,11 @@ export function SimpleDicePanel() {
   } = useSimpleDice();
 
   return (
-    <main className="main">
-      <section className="controls-panel">
-        <p className="hint">{t.simpleDiceHint}</p>
+    <main className="main" lang={locale}>
+      <section className="controls-panel" key={`controls-${locale}`}>
+        <p className="hint" key={locale}>
+          {t.simpleDiceHint}
+        </p>
 
         <div className="dice-count-selector">
           <span className="roll-label">{t.diceCount}</span>
@@ -82,7 +89,7 @@ export function SimpleDicePanel() {
         </button>
       </section>
 
-      <section className="results-panel">
+      <section className="results-panel" key={`results-${locale}`}>
         {showResults && result ? (
           <div className="simple-result">
             <p className="simple-result-main">
