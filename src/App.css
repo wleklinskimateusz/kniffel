@@ -116,6 +116,11 @@ button {
   backdrop-filter: blur(4px);
 }
 
+.results-panel {
+  scroll-margin-top: 1rem;
+  scroll-margin-bottom: 1.5rem;
+}
+
 .hint {
   margin: 0 0 1rem;
   font-size: 0.85rem;

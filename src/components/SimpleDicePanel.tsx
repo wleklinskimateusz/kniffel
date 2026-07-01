@@ -1,3 +1,4 @@
+import { useEffect, useRef } from 'react';
 import { useI18n } from '../i18n/context.tsx';
 import { formatPercent } from '../i18n/index.ts';
 import type { Locale } from '../i18n/index.ts';
@@ -27,6 +28,26 @@ export function SimpleDicePanel({ locale }: SimpleDicePanelProps) {
     showResults,
     result,
   } = useSimpleDice();
+
+  const resultsRef = useRef<HTMLElement>(null);
+  const scrollToResultsAfterCalc = useRef(false);
+
+  useEffect(() => {
+    if (isCalculating || !scrollToResultsAfterCalc.current) return;
+    if (!showResults) {
+      scrollToResultsAfterCalc.current = false;
+      return;
+    }
+    scrollToResultsAfterCalc.current = false;
+    requestAnimationFrame(() => {
+      resultsRef.current?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    });
+  }, [isCalculating, showResults]);
+
+  const handleCalculate = () => {
+    scrollToResultsAfterCalc.current = true;
+    calculate();
+  };
 
   return (
     <main className="main" lang={locale}>
@@ -74,7 +95,7 @@ export function SimpleDicePanel({ locale }: SimpleDicePanelProps) {
         <button
           type="button"
           className={isCalculating ? 'calculate-btn calculating' : 'calculate-btn'}
-          onClick={calculate}
+          onClick={handleCalculate}
           disabled={isCalculating}
           aria-busy={isCalculating}
         >
@@ -89,7 +110,11 @@ export function SimpleDicePanel({ locale }: SimpleDicePanelProps) {
         </button>
       </section>
 
-      <section className="results-panel" key={`results-${locale}`}>
+      <section
+        ref={resultsRef}
+        className="results-panel"
+        key={`results-${locale}`}
+      >
         {showResults && result ? (
           <div className="simple-result">
             <p className="simple-result-main">
