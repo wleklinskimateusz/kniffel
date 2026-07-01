@@ -3,7 +3,7 @@ import type { CategoryId } from '../domain/categories.ts';
 import {
   getAdviceForAllCategories,
   getBestOverallAdvice,
-  rankingScore,
+  compareAdviceRanking,
   rerollsFromRollNumber,
   type CategoryAdvice,
 } from '../engine/optimalHold.ts';
@@ -32,7 +32,7 @@ function sortAdvice(advice: CategoryAdvice[], sortKey: SortKey): CategoryAdvice[
   const copy = [...advice];
   copy.sort((a, b) => {
     if (sortKey === 'effectivePoints') {
-      return rankingScore(b) - rankingScore(a);
+      return compareAdviceRanking(b, a);
     }
     if (sortKey === 'expectedPoints') {
       return b.expectedPoints - a.expectedPoints;

@@ -8,6 +8,7 @@ import {
   getAdviceForAllCategories,
   getBestOverallAdvice,
   rankingScore,
+  compareAdviceRanking,
 } from "./optimalHold.ts";
 import { toCounts } from "../domain/dice.ts";
 
@@ -84,6 +85,19 @@ describe("probability engine", () => {
     expect(rankingScore(small)).toBe(30);
     expect(rankingScore(large)).toBeCloseTo(35.56, 1);
     expect(getBestOverallAdvice(advice)?.category).toBe("largeStraight");
+  });
+
+  it("breaks E[w/ fallback] ties in favor of non-zero E[points]", () => {
+    const dice = [3, 3, 3, 6, 6];
+    const advice = getAdviceForAllCategories(dice, 0);
+    const fourKind = advice.find((a) => a.category === "fourKind")!;
+    const fullHouse = advice.find((a) => a.category === "fullHouse")!;
+
+    expect(rankingScore(fourKind)).toBe(rankingScore(fullHouse));
+    expect(fullHouse.expectedPoints).toBeGreaterThan(0);
+    expect(fourKind.expectedPoints).toBe(0);
+    expect(compareAdviceRanking(fullHouse, fourKind)).toBeGreaterThan(0);
+    expect(getBestOverallAdvice(advice)?.category).toBe("fullHouse");
   });
 
   it("does not use fallback metrics for upper section categories", () => {
